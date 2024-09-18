@@ -1,0 +1,83 @@
+import random
+import timeit
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def merge_sort(arr):
+    if len(arr) > 1:
+        mid = len(arr) // 2
+        left_half = arr[:mid]
+        right_half = arr[mid:]
+
+        merge_sort(left_half)
+        merge_sort(right_half)
+
+        i = j = k = 0
+
+        while i < len(left_half) and j < len(right_half):
+            if left_half[i] < right_half[j]:
+                arr[k] = left_half[i]
+                i += 1
+            else:
+                arr[k] = right_half[j]
+                j += 1
+            k += 1
+
+        while i < len(left_half):
+            arr[k] = left_half[i]
+            i += 1
+            k += 1
+
+        while j < len(right_half):
+            arr[k] = right_half[j]
+            j += 1
+            k += 1
+
+def insertion_sort(arr):
+    for i in range(1, len(arr)):
+        key = arr[i]
+        j = i - 1
+        while j >= 0 and key < arr[j]:
+            arr[j + 1] = arr[j]
+            j -= 1
+        arr[j + 1] = key
+
+def generate_data_sets(sizes):
+    data_sets = []
+    for size in sizes:
+        data_sets.append(random.sample(range(size * 10), size))
+    return data_sets
+
+def measure_time(sort_func, data):
+    timer = timeit.Timer(lambda: sort_func(data.copy()))
+    return timer.timeit(number=1)
+
+def measure_all_algorithms(data_sets):
+    results = []
+    for data in data_sets:
+        size = len(data)
+        merge_time = measure_time(merge_sort, data)
+        insertion_time = measure_time(insertion_sort, data)
+        timsort_time = measure_time(sorted, data)
+        results.append((size, merge_time, insertion_time, timsort_time))
+    return results
+
+sizes = [10, 100, 1000, 10000, 100000]
+data_sets = generate_data_sets(sizes)
+results = measure_all_algorithms(data_sets)
+
+# Convert results to a DataFrame
+df = pd.DataFrame(results, columns=['Size', 'Merge Sort', 'Insertion Sort', 'Timsort'])
+
+# Plot the results
+plt.figure(figsize=(10, 6))
+plt.plot(df['Size'], df['Merge Sort'], label='Merge Sort', marker='o')
+plt.plot(df['Size'], df['Insertion Sort'], label='Insertion Sort', marker='o')
+plt.plot(df['Size'], df['Timsort'], label='Timsort', marker='o')
+plt.xlabel('Data Set Size')
+plt.ylabel('Time (seconds)')
+plt.title('Comparison of Sorting Algorithms')
+plt.legend()
+plt.xscale('log')
+plt.yscale('log')
+plt.show()
